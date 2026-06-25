@@ -1,0 +1,21 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Pellet Stove",
+        "description": "Enter the local IP address of your Pellet Stove WiFi module. The integration polls GET /status every 10 seconds.",
+        "data": {
+          "host": "Host (IP address or hostname)",
+          "port": "Port"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach the stove. Check the IP address and that Home Assistant is on the same network.",
+      "unknown": "Unexpected error while connecting to the stove."
+    },
+    "abort": {
+      "already_configured": "This stove is already configured."
+    }
+  }
+}

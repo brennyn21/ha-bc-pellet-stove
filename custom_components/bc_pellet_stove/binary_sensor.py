@@ -61,7 +61,8 @@ class PelletStoveChildLockBinarySensor(PelletStoveEntity, BinarySensorEntity):
     def is_on(self) -> bool | None:
         if not self.coordinator.data:
             return None
-        return bool(self.coordinator.data.get("childLock"))
+        # HA lock device class: on=unlocked, off=locked; firmware childLock=true means locked.
+        return not bool(self.coordinator.data.get("childLock"))
 
 
 class PelletStoveInitializedBinarySensor(PelletStoveEntity, BinarySensorEntity):

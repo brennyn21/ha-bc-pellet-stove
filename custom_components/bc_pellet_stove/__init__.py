@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import PelletStoveApi
-from .const import CONF_HOST, CONF_PORT, DOMAIN
+from .const import CONF_DEVICE_ID, CONF_HOST, CONF_NAME, CONF_PORT, DEFAULT_NAME, DOMAIN
 from .coordinator import PelletStoveCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,5 +41,20 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload BC Pellet Stove."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
+        coordinator: PelletStoveCoordinator = hass.data[DOMAIN].pop(entry.entry_id)
+        await coordinator.async_shutdown()
     return unload_ok
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Keep an existing stove attached to the same device when its IP changes."""
+    if entry.version > 1:
+        return True
+
+    data = dict(entry.data)
+    data.setdefault(CONF_NAME, DEFAULT_NAME)
+    # Device registry currently keys the device by host. Preserve that id.
+    data.setdefault(CONF_DEVICE_ID, data[CONF_HOST])
+    hass.config_entries.async_update_entry(entry, data=data, version=2)
+    _LOGGER.debug("Migrated BC Pellet Stove entry %s to version 2", entry.entry_id)
+    return True

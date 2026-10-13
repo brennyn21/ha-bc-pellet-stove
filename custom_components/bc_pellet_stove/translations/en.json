@@ -3,7 +3,15 @@
     "step": {
       "user": {
         "title": "Pellet Stove",
-        "description": "Enter the local IP address of your Pellet Stove WiFi module. The integration polls GET /status every 10 seconds.",
+        "description": "Add one entry for each stove. Enter the local IP address of that stove's WiFi module. The stove is named from its MQTT username.",
+        "data": {
+          "host": "Host (IP address or hostname)",
+          "port": "Port"
+        }
+      },
+      "reconfigure": {
+        "title": "Update stove",
+        "description": "Change the IP address or port. The stove keeps the name from its MQTT username, and existing entities and history are kept.",
         "data": {
           "host": "Host (IP address or hostname)",
           "port": "Port"
@@ -12,10 +20,13 @@
     },
     "error": {
       "cannot_connect": "Could not reach the stove. Check the IP address and that Home Assistant is on the same network.",
-      "unknown": "Unexpected error while connecting to the stove."
+      "unknown": "Unexpected error while connecting to the stove.",
+      "already_configured": "A stove with this host and port is already set up.",
+      "invalid_host": "Enter an IP address or hostname."
     },
     "abort": {
-      "already_configured": "This stove is already configured."
+      "already_configured": "This stove is already configured.",
+      "reconfigure_successful": "Stove settings updated."
     }
   }
 }

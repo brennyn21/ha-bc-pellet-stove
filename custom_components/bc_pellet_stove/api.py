@@ -12,12 +12,29 @@ from .const import MODE_TO_ENDPOINT
 _LOGGER = logging.getLogger(__name__)
 
 
+def stove_name_from_status(status: dict[str, Any], fallback: str) -> str:
+    """Use the module's MQTT username as the stove name when it is set."""
+    username = status.get("mqttUsername")
+    if isinstance(username, str) and username.strip():
+        return username.strip()
+    return fallback
+
+
+def stove_base_url(host: str, port: int) -> str:
+    """Build the stove HTTP base URL, bracketing IPv6 addresses."""
+    if ":" in host and not host.startswith("["):
+        host = f"[{host}]"
+    return f"http://{host}:{port}"
+
+
 class PelletStoveApi:
     """Thin wrapper around the stove's built-in HTTP server."""
 
     def __init__(self, session: aiohttp.ClientSession, host: str, port: int) -> None:
         self._session = session
-        self._base_url = f"http://{host}:{port}"
+        self.host = host
+        self.port = port
+        self._base_url = stove_base_url(host, port)
 
     async def async_get_status(self) -> dict[str, Any]:
         """Fetch the full JSON status document."""
@@ -65,3 +82,16 @@ class PelletStoveApi:
             f"{self._base_url}{endpoint}", timeout=aiohttp.ClientTimeout(total=10)
         ) as response:
             response.raise_for_status()
+
+    async def _async_get(self, path: str, params: dict[str, Any]) -> None:
+        async with self._session.get(
+            f"{self._base_url}{path}",
+            params=params,
+            timeout=aiohttp.ClientTimeout(total=10),
+        ) as response:
+            response.raise_for_status()
+
+    async def async_set_band(self, path: str, degrees: int) -> None:
+        """Set a Temp-mode band. 0 disables that side."""
+        val = "off" if degrees <= 0 else str(degrees)
+        await self._async_get(path, {"val": val})

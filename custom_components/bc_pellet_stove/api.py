@@ -95,3 +95,18 @@ class PelletStoveApi:
         """Set a Temp-mode band. 0 disables that side."""
         val = "off" if degrees <= 0 else str(degrees)
         await self._async_get(path, {"val": val})
+
+    async def async_set_timer(self, hours: int, timer_type: str) -> None:
+        """Set timer via GET /timer/set?hours=&type= (Temp/Manual only; 1–24 hours)."""
+        await self._async_get(
+            "/timer/set",
+            {"hours": int(hours), "type": timer_type},
+        )
+
+    async def async_cancel_timer(self) -> None:
+        """Cancel timer via GET /timer/cancel."""
+        async with self._session.get(
+            f"{self._base_url}/timer/cancel",
+            timeout=aiohttp.ClientTimeout(total=10),
+        ) as response:
+            response.raise_for_status()

@@ -64,19 +64,32 @@ The existing device and entity history stay in place. Home Assistant checks that
 |--------|------|------|
 | Power | Switch | `GET /power` (toggle when state must change) |
 | Current temperature | Sensor | `/status` → `currentTemp` |
+| Aux temperature | Sensor | `/status` → `auxTemp` (unavailable when aux is stale/offline) |
+| Aux humidity | Sensor | `/status` → `auxHumidity` (unavailable when aux is stale/offline) |
 | Set temperature | Number | `GET /settemp?val=&unit=` |
 | Burn level | Number (1–5) | `GET /level?val=` |
 | Mode | Select | `GET /mode/manual`, `/mode/temp`, `/mode/thermostat`, `/mode/weekly` |
 | Turn off above | Number (0–40, 0 = off). Hidden unless mode is Temp | `GET /turnoffabove?val=` |
 | Turn on below | Number (0–40, 0 = off). Hidden unless mode is Temp | `GET /turnonbelow?val=` |
+| Manual on / off temperature | Sensor (read-only) | `/status` → `manualOnTemp` / `manualOffTemp` |
+| Use aux sensor temp | Binary sensor (read-only) | `/status` → `manualUseAuxTemp` |
+| Temp / Manual auto rules enabled | Binary sensor (read-only) | `/status` → `tempAutoRulesEnabled` / `manualAutoTempEnabled` |
+| Power changed at | Sensor (timestamp) | `/status` → `runtime` |
+| Set timer type | Select (`on` / `off`) | Used with Timer hours |
+| Timer hours | Number (1–24) | `GET /timer/set?hours=&type=` (Temp/Manual only) |
+| Cancel timer | Button | `GET /timer/cancel` |
+| Timer active / remaining / type | Binary sensor + sensors | `/status` → `timerActive`, `timerHours`/`timerMinutes`, `timerType` |
+| Schedule active / id | Binary sensor + sensor | `/status` → `scheduleActive`, `scheduleId` |
 | Error | Binary sensor | `/status` → `error` |
 | Error code | Sensor (diagnostic) | `/status` → `errorCode` |
 | Child lock | Binary sensor (read-only) | `/status` → `childLock` |
-| Initialized | Binary sensor (diagnostic) | `/status` → `initialized` |
-| Firmware version | Sensor (diagnostic) | `/status` → `firmwareVersion` |
-| WiFi RSSI | Sensor (diagnostic) | `/status` → `wifiRSSI` |
+| Initialized / MCU heartbeat | Binary sensor (diagnostic) | `/status` → `initialized`, `heartbeatResponded` |
+| Firmware / DP layout / temp unit | Sensor (diagnostic) | `/status` → `firmwareVersion`, `alternateLayout`, `tempUnit` |
+| WiFi RSSI / SSID / status / IP | Sensor (diagnostic) | `/status` → `wifiRSSI`, `wifiSSID`, `wifiStatus`, `ipAddress` |
+| MQTT connected / enabled / username | Binary sensor + sensor (diagnostic) | `/status` → `mqttConnected`, `mqttEnabled`, `mqttUsername` |
+| NTP synced / DST / timezone / module time | Binary + sensors (diagnostic) | `/status` → `ntpSynced`, `dstEnabled`, `timezone`, `moduleTimeUnix` |
 
-Child lock is read-only over local HTTP (no control endpoint on the device).
+Child lock and the Manual/Temp auto rule values above are read-only over local HTTP (no control endpoints on the device for those). Controls that already exist locally stay as Switch / Number / Select.
 
 ## Requirements
 

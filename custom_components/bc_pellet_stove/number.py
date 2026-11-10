@@ -43,6 +43,7 @@ async def async_setup_entry(
                 "Turn on below",
                 "mdi:thermometer-chevron-down",
             ),
+            PelletStoveTimerHoursNumber(coordinator),
         ]
     )
 
@@ -187,4 +188,38 @@ class PelletStoveBandNumber(PelletStoveEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         await self.coordinator.api.async_set_band(self._path, int(value))
+        await self.coordinator.async_request_refresh()
+
+
+class PelletStoveTimerHoursNumber(PelletStoveEntity, NumberEntity):
+    """Set a 1–24 hour timer via GET /timer/set (Temp/Manual modes only)."""
+
+    _attr_name = "Timer hours"
+    _attr_icon = "mdi:timer-plus-outline"
+    _attr_native_min_value = 1
+    _attr_native_max_value = 24
+    _attr_native_step = 1
+    _attr_mode = NumberMode.BOX
+    _attr_native_unit_of_measurement = "h"
+
+    def __init__(self, coordinator: PelletStoveCoordinator) -> None:
+        super().__init__(coordinator, "timer_hours")
+
+    @property
+    def native_value(self) -> float | None:
+        """Show remaining hours while a timer is active."""
+        if not self.coordinator.data or not self.coordinator.data.get("timerActive"):
+            return None
+        hours = self.coordinator.data.get("timerHours")
+        try:
+            return round(float(hours), 2) if hours is not None else None
+        except (TypeError, ValueError):
+            return None
+
+    async def async_set_native_value(self, value: float) -> None:
+        hours = int(value)
+        timer_type = self.coordinator.timer_type_preference
+        if timer_type not in ("on", "off"):
+            timer_type = "off"
+        await self.coordinator.api.async_set_timer(hours, timer_type)
         await self.coordinator.async_request_refresh()

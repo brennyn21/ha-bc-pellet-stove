@@ -13,15 +13,22 @@ from .const import DOMAIN, MODES
 from .coordinator import PelletStoveCoordinator
 from .entity import PelletStoveEntity
 
+TIMER_TYPES = ["on", "off"]
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up pellet stove mode select."""
+    """Set up pellet stove selects."""
     coordinator: PelletStoveCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([PelletStoveModeSelect(coordinator)])
+    async_add_entities(
+        [
+            PelletStoveModeSelect(coordinator),
+            PelletStoveTimerTypeSelect(coordinator),
+        ]
+    )
 
 
 class PelletStoveModeSelect(PelletStoveEntity, SelectEntity):
@@ -44,3 +51,31 @@ class PelletStoveModeSelect(PelletStoveEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         await self.coordinator.api.async_set_mode(option)
         await self.coordinator.async_request_refresh()
+
+
+class PelletStoveTimerTypeSelect(PelletStoveEntity, SelectEntity):
+    """Choose on/off for the next timer set (used with Timer hours)."""
+
+    _attr_name = "Set timer type"
+    _attr_icon = "mdi:timer-cog-outline"
+    _attr_options = TIMER_TYPES
+
+    def __init__(self, coordinator: PelletStoveCoordinator) -> None:
+        super().__init__(coordinator, "timer_type_select")
+
+    @property
+    def current_option(self) -> str | None:
+        preferred = self.coordinator.timer_type_preference
+        if preferred in TIMER_TYPES:
+            return preferred
+        if self.coordinator.data and self.coordinator.data.get("timerActive"):
+            value = str(self.coordinator.data.get("timerType", "")).lower()
+            if value in TIMER_TYPES:
+                return value
+        return "off"
+
+    async def async_select_option(self, option: str) -> None:
+        if option not in TIMER_TYPES:
+            return
+        self.coordinator.timer_type_preference = option
+        self.async_write_ha_state()

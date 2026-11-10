@@ -32,6 +32,8 @@ class PelletStoveCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self.entry = entry
         self.api = api
+        # Preferred type for the next GET /timer/set (on|off)
+        self.timer_type_preference = "off"
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:

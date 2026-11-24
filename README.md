@@ -21,7 +21,7 @@ This repository is the HACS integration only:
 ### HACS (recommended)
 
 1. In HACS, open **Integrations** → **⋮** (top right) → **Custom repositories**.
-2. Add `https://github.com/brenny21/ha-bc-pellet-stove`, category **Integration**, then click **Add**.
+2. Add `https://github.com/brennyn21/ha-bc-pellet-stove`, category **Integration**, then click **Add**.
 3. Search for **BC Pellet Stove**, install, and restart Home Assistant.
 4. Go to **Settings → Devices & services → Add integration** and select **BC Pellet Stove**.
 5. Enter the stove's LAN IP address. Repeat for each stove. Each stove is named from its app username (`mqttUsername` in `/status`).
